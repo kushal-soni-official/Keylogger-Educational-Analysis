@@ -3,6 +3,8 @@
 > [!CAUTION]
 > **LEGAL NOTICE:** This project is strictly for **authorized security testing, forensic research, and educational purposes**. Unauthorized use of these techniques against systems you do not own is illegal and violates GitHub's Acceptable Use Policies.
 
+> **NOTE:** No working malicious payloads, exfiltration techniques, or pre-compiled keyloggers are included in this repository. All tools require manual setup steps for **researchers**.
+
 ---
 
 ## 1. Introduction
@@ -130,3 +132,11 @@ python keylogger.py --uninstall
 - ​Prohibited Use: Deployment on any system without explicit owner consent.
 - ​Liability: The author assumes no responsibility for misuse. This is "as-is" research material for ethical hackers and security professionals.
 - ​GitHub Policy: This project complies with GitHub’s policy on security research by focusing on defensive analysis and educational documentation.
+
+
+## ⚠️ GitHub Policy Compliance
+
+This project adheres to GitHub’s [Active Malware or Exploits Policy](https://docs.github.com/en/site-policy/acceptable-use-policies/github-active-malware-or-exploits) by:
+- Focusing on **educational analysis** of threats for cybersecurity professionals.
+- Avoiding inclusion of operational exploits or harmful payloads (e.g., network exfiltration, system persistence).
+- Providing defensive analysis techniques to improve security awareness.
