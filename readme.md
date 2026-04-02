@@ -1,188 +1,132 @@
-# 👁️‍🗨️ Stealth Keylogger –
+# 🎓 Keylogger Educational Analysis
 
-IMPORTANT: This tool is intended for authorized security testing and educational purposes only. Unauthorized use is illegal.
+> [!CAUTION]
+> **LEGAL NOTICE:** This project is strictly for **authorized security testing, forensic research, and educational purposes**. Unauthorized use of these techniques against systems you do not own is illegal and violates GitHub's Acceptable Use Policies.
 
 ---
 
 ## 1. Introduction
 
-This is a Windows keylogger that disguises itself as a normal system information tool. While it displays real‑time data about your computer (CPU, RAM, disk space, uptime), it secretly records every keystroke in the background. The logs are encrypted so only someone with the correct key can read them.
+This repository provides a **Keylogger Educational Analysis** to demonstrate how modern input-monitoring tools can masquerade as legitimate system utilities. By analyzing this codebase, security students and researchers can study the intersection of **Social Engineering (UI Masquerading)** and **Low-Level Windows API Hooking**.
 
-The program can be set to start automatically when Windows boots, and the window cannot be closed – it only minimizes, so the keylogger keeps running even if the user tries to exit. This makes it useful for security training, penetration testing, and understanding how such tools work.
+The program simulates a "Living off the Land" (LotL) threat by displaying real-time system data (CPU, RAM, disk space) while demonstrating how background processes can remain resilient to user termination. This is a vital resource for understanding the mechanics of credential-harvesting threats and developing effective defensive signatures.
 
 ---
 
 ## Screenshots
 
 ![System Information Window](main-window.png)
+*Figure 1: Demonstration of a functional UI used to divert user attention.*
 
 ![Decrypted Logs](logs-decrypted.png)
+*Figure 2: Forensic analysis of recovered and decrypted input data.*
 
 ---
 
-## 2. Current Features
+## 2. Technical Analysis of Features
 
-- Genuine‑looking Interface – Shows real system information (CPU, RAM, disk, uptime) with a modern acrylic glass effect on Windows 10/11.
-- Stealth – The window cannot be closed; the user can only minimize it. The keylogger continues to run in the background.
-- Robust Keylogging – Uses a low‑level keyboard hook (SetWindowsHookEx) with automatic fallbacks (pynput and polling) to ensure it works even if the hook is blocked.
-- Encrypted Logs – Keystrokes are saved with a timestamp and the active window title, then encrypted with AES‑256‑GCM. The encryption key is derived from the machine’s unique ID, so logs from one computer cannot be read on another.
-- Log Rotation – Prevents the log file from growing too large. Old logs are rotated and compressed automatically.
-- Persistence – Optional: installs a Registry Run key and a scheduled task so the keylogger starts again after a reboot. (Requires administrator rights.)
-- Single Instance – Only one copy of the program can run at a time.
-- Uninstall Switch – A simple command‑line option removes all persistence entries.
+This project explores several key areas of Windows security and software behavior:
 
----
-
-## 3. Requirements
-
-- Windows 7, 8, 10, or 11
-- Python 3.6 or higher (if running the script directly)
-- Administrator privileges are only needed for installing persistence
+* **UI Masquerading Techniques:** Demonstrates a functional acrylic glass interface (Windows 10/11 style) to show how background tasks can be hidden behind "genuine-looking" system tools.
+* **API Hooking Analysis:** Studies the implementation of `SetWindowsHookEx` (Low-Level Keyboard Hook) and explores fallback mechanisms like `pynput` and polling to understand how tools maintain functionality when hooks are blocked.
+* **Cryptographic Data Protection:** Analyzes the use of **AES-256-GCM** encryption. The research demonstrates how hardware-bound keys (Machine ID) prevent logs from being read on unauthorized devices.
+* **Persistence Mechanism Research:** Explores the implementation of Registry Run keys and Windows Scheduled Tasks to study how software ensures survival across system reboots.
+* **Process Resilience:** Analyzes "minimize-to-background" logic as a method of maintaining process uptime.
 
 ---
 
-## 4. Installation
+## 3. Requirements & Environment
 
-### Option A – Run from source (requires Python)
-
-1. Save the keylogger.py script in a folder.
-2. Open a Command Prompt in that folder.
-3. Install the required libraries:
-   ```bash
-   pip install -r requirements.txt
-   ```
-   (The requirements.txt file contains pywin32, pycryptodome, and pynput.)
-4. Run the script:
-   ```bash
-   python keylogger.py
-   ```
-   A window titled “System Information” will appear, and the keylogger will start.
-
-### Option B – Create a standalone executable
-
-1. Follow steps 1‑3 above.
-2. Install PyInstaller:
-   ```bash
-   pip install pyinstaller
-   ```
-3. Build the executable:
-   ```bash
-   pyinstaller --onefile --noconsole --name "SystemInfo.exe" keylogger.py
-   ```
-4. The file SystemInfo.exe will be in the dist folder. You can copy it to any Windows computer (Python not needed) and double‑click to run.
+To conduct this analysis safely:
+* **OS:** Windows 10/11 (Recommended for UI effects).
+* **Language:** Python 3.6+.
+* **Environment:** Conduct all tests within an **isolated Virtual Machine (VM)**.
 
 ---
 
-## 5. Usage
+## 4. Setting up the Research Environment
 
-- After starting, the System Information window opens and displays live stats. It looks like a normal tool.
-- The keylogger is now active. Every key you press is captured and saved.
-- You can minimize the window, but closing it (clicking the X) will only minimize it – the program stays in the background.
-- To stop the keylogger, you must end the process via Task Manager or use the uninstall option (if you previously enabled persistence).
+### Option A – Source Code Analysis (Requires Python)
 
----
+1.  Clone the repository and navigate to the directory.
+2.  Install the required research libraries:
+    ```bash
+    pip install -r requirements.txt
+    ```
+    *(Dependencies: pywin32, pycryptodome, and pynput for API interaction.)*
+3.  Execute the script to observe API behavior:
+    ```bash
+    python keylogger.py
+    ```
 
-## 6. Viewing Logs
+### Option B – Standalone Binary Analysis
 
-Logs are stored in:
-   ```bash
-   %APPDATA%\Microsoft\Windows\logs\keystrokes.enc
-   ```
-They are encrypted. To read them, you need the decryption function.
-
-download the small script decrypt.py next to keylogger.py.
-
-Then run:
-   ```bash
-   python decrypt.py "%APPDATA%\Microsoft\Windows\logs\keystrokes.enc
-   ```
-
-The output will look like:
-   ```bash
-   2025-03-28 14:23:05 | Notepad - Untitled | Hello
-   2025-03-28 14:23:06 | Notepad - Untitled | [ENTER]
-   ```
-
-If you compiled the executable, you will need to reuse the Crypto class from the source code – copy it into a separate Python script and run it with the same key derivation method.
-
----
-
-## 7. Persistence (Auto‑start after reboot)
-
-If you want the keylogger to survive a restart, edit the script and change the line in the CONFIG dictionary from "persistence": False to "persistence": True. Then run the script as administrator (right‑click Command Prompt → Run as administrator, then python keylogger.py). The program will:
-- Add a Registry Run key (HKCU\Software\Microsoft\Windows\CurrentVersion\Run)
-- Create a scheduled task (daily at 09:00)
-
-After that, the keylogger will start automatically every time you log in.
-
-Important: This requires administrator rights. The script will show a UAC prompt to ask for permission.
-
----
-
-## 8. Uninstalling
-
-To remove all persistence entries, run the script (or the compiled EXE) with the --uninstall switch:
+Researchers can study the behavior of the tool as a compiled entity using `PyInstaller`:
 ```bash
-   python keylogger.py --uninstall
-```
-or
-```bash
-   SystemInfo.exe --uninstall
+pyinstaller --onefile --noconsole --name "SystemInfo_Analysis" keylogger.py
 ```
 
-This will delete the Registry key and the scheduled task. It does not delete the log files – you can delete them manually from %APPDATA%\Microsoft\Windows\logs if you wish.
+---
+
+## 5. Usage for Security Auditing
+- ​Upon execution, the "System Information" window provides a diversionary UI.
+- ​The research tool begins monitoring input, which is recorded for forensic study.
+- ​Closing the window demonstrates "Resilience Logic" by minimizing to the background rather than terminating.
+- ​To end the analysis, use Task Manager to terminate the process or utilize the provided uninstall switch.
 
 ---
 
-## 9. Defense Against This Tool
+## 6. Forensic Log Analysis
+- ​This project teaches how to locate and analyze artifacts left by monitoring tools.
+- Default Artifact Path:
+```
+%APPDATA%\Microsoft\Windows\logs\keystrokes.enc
+```
 
-- Detection: Security software can detect hooks, unusual scheduled tasks, and registry entries. Monitor for processes with unexpected names.
-- Prevention: Keep your system updated, use an EDR (Endpoint Detection and Response) solution, and limit user privileges – a standard user cannot install persistence system‑wide.
-- Response: If you suspect a keylogger, check Task Manager for suspicious processes, look at the startup folder, and examine scheduled tasks.
-
----
-
-## 10. Future Scope & Add‑on Features
-
-The current version is a stable, educational keylogger. Possible improvements (not yet implemented) include:
-
-- Remote C2 (Command & Control) – Send logs to a server over HTTPS or SMTP.
-- Clipboard Logging – Capture copied text.
-- Screenshots – Take periodic screenshots.
-- Process Injection – Hide the keylogger inside a legitimate process.
-- Stealthier Hooks – Use kernel‑level drivers or alternative hooking techniques.
-- Configurable via external file – Allow editing settings without recompiling.
-- Tray Icon – Minimize the window to the system tray for even more stealth.
-
-These features would make the tool more advanced and closer to real‑world malware, but they also increase risk. Use them only in controlled environments.
+- To study the recovered data, use the provided decrypt.py utility:
+```
+python decrypt.py "%APPDATA%\Microsoft\Windows\logs\keystrokes.enc"
+```
 
 ---
 
-## ⚠️ Educational Purpose & Compliance Notice
+## 7. Understanding Persistence Mechanisms
+- ​To study how threats maintain a presence on a system, the CONFIG dictionary can be toggled to persistence: True.
+- This demonstrates:
+​Registry Manipulation: Writing to HKCU\Software\Microsoft\Windows\CurrentVersion\Run.
+- Task Scheduling: Automating execution via Windows Task Scheduler.
+- ​Note: This requires elevated privileges to simulate an Administrative-level compromise.
 
-This repository is intended **strictly for educational and authorized security research**. The code demonstrates common malware techniques (keylogging, persistence, encryption) to help defenders understand how such tools work and how to detect them.
+---
 
-### 🧪 Intended Use
+## ​8. Removal & Cleanup
+​To remove research artifacts and persistence entries, run the script with the uninstall switch:
+```
+python keylogger.py --uninstall
+```
 
-- Run this software **only** in isolated environments you own (e.g., a virtual machine) or have explicit written permission to test.
-- Use the code to learn about:
-  - Low‑level keyboard hooks
-  - Registry and scheduled task persistence
-  - Log encryption and rotation
-  - Defensive countermeasures
+---
 
-### 🚫 Prohibited Use
+## 9. Defensive Countermeasures (The Defender's Perspective)
+- ​A core goal of this analysis is to improve detection. Defenders should focus on:
+- ​Behavioral Detection: Monitoring for unsigned processes calling SetWindowsHookEx.
+- Audit Persistence: Regularly checking Registry Run keys and the Task Scheduler for unexpected entries.
+- EDR/AV: Utilizing Endpoint Detection and Response tools that flag the use of pynput or raw Win32 hooks in non-system processes.
 
-- **Do not** deploy this tool on any system without the owner’s consent.
-- **Do not** use it for actual surveillance, espionage, or any malicious purpose.
-- **Do not** distribute compiled binaries that could be misused.
+---
 
-### 📜 GitHub Terms of Service Compliance
+## ​10. Threat Vectors for Future Study
+- ​These concepts represent advanced techniques used by real-world threat actors. Studying these helps in developing high-level defensive strategies:
+- ​Network Exfiltration (C2): Analyzing how data could be sent via HTTPS to a remote Command & Control server.
+- ​Clipboard & Screenshot Auditing: Understanding how sensitive data (passwords/PII) is captured beyond keystrokes.
+- ​Process Injection: Researching how monitoring code can be injected into legitimate system processes (e.g., explorer.exe).
+- ​Rootkit-level Hooks: Exploring the difference between user-land hooks and kernel-level drivers.
 
-- This repository contains **source code only** – no pre‑compiled executables are provided.
-- The code is presented as a learning resource and does **not** encourage or facilitate illegal activities.
-- By using this repository, you agree to abide by all applicable laws and GitHub’s [Acceptable Use Policies](https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies).
+---
 
-### ⚖️ Legal Disclaimer
+## ​⚠️ Educational Compliance & T&C
+​This repository is a learning resource. It does not provide pre-compiled malware and is intended to help the security community build better detection signatures.
 
-The author(s) are not responsible for any misuse of this software. Unauthorized use may violate local, state, or federal laws, including the Computer Fraud and Abuse Act (CFAA) in the United States and similar laws in other jurisdictions. You assume full responsibility for your actions when using this code.
+- ​Prohibited Use: Deployment on any system without explicit owner consent.
+- ​Liability: The author assumes no responsibility for misuse. This is "as-is" research material for ethical hackers and security professionals.
+- ​GitHub Policy: This project complies with GitHub’s policy on security research by focusing on defensive analysis and educational documentation.
